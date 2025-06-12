@@ -1,0 +1,9 @@
+<library path="kinco_diff_controller">
+    <class name="kinco_diff_controller/DrivetrainSystemHardware"
+           type="kinco_diff_controller::DrivetrainSystemHardware"
+           base_class_type="hardware_interface::SystemInterface">
+        <description>
+            ros2_control SystemInterface plugin for controlling Kinco MD60-based differential drivetrains.
+        </description>
+    </class>
+</library>
