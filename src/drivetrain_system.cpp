@@ -5,6 +5,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include <algorithm>
+
 namespace kinco_diff_controller {
     hardware_interface::CallbackReturn DrivetrainSystemHardware::on_init(const hardware_interface::HardwareInfo& info) {
         if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
@@ -18,6 +20,9 @@ namespace kinco_diff_controller {
         port_ = info_.hardware_parameters["port"];
         left_id_ = hardware_interface::stod(info_.hardware_parameters["left_id"]);
         right_id_ = hardware_interface::stod(info_.hardware_parameters["right_id"]);
+        max_speed_ = hardware_interface::stod(info_.hardware_parameters["max_speed"]);
+        reverse_ = hardware_interface::stod(info_.hardware_parameters["reverse"]);
+        reverse_right_ = hardware_interface::stod(info_.hardware_parameters["reverse_right"]);
 
         for (const hardware_interface::ComponentInfo& joint : info_.joints) {
             if (joint.command_interfaces.size() != 1) {
@@ -145,16 +150,29 @@ namespace kinco_diff_controller {
         right_position_ = right_motor_->GetPosition() * 2 * M_PI;
         right_velocity_ = right_motor_->GetVelocity() * 2 * M_PI / 60;
 
+        if (reverse_) {
+            left_position_ = -left_position_;
+            left_velocity_ = -left_velocity_;
+            right_position_ = -right_position_;
+            right_velocity_ = -right_velocity_;
+        }
+
         return hardware_interface::return_type::OK;
     }
 
     hardware_interface::return_type DrivetrainSystemHardware::write(const rclcpp::Time& /* time */, const rclcpp::Duration& /* period */) {
-        if (!left_motor_->SetVelocity(left_command_ * 60 / (2 * M_PI))) { // convert from radians per second to rpm
+        // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "velocity: left %llf, right %llf (rad/s)", left_command_, right_command_);
+        double left_cmd = isnanl(left_command_) ? 0.0 : std::clamp((left_command_ * 60 / (2 * M_PI)), -max_speed_, max_speed_);
+        if (reverse_) left_cmd = -left_cmd;
+        if (!left_motor_->SetVelocity(left_cmd)) { // convert from radians per second to rpm
             RCLCPP_ERROR(get_logger(), "cannot set left motor velocity");
             return hardware_interface::return_type::ERROR;
         }
-
-        if (!right_motor_->SetVelocity(right_command_ * 60 / (2 * M_PI))) {
+        
+        double right_cmd = isnanl(right_command_) ? 0.0 : std::clamp((right_command_ * 60 / (2 * M_PI)), -max_speed_, max_speed_);
+        if (reverse_) right_cmd = -right_cmd;
+        if (reverse_right_) right_cmd = -right_cmd;
+        if (!right_motor_->SetVelocity(right_cmd)) {
             RCLCPP_ERROR(get_logger(), "cannot set right motor velocity");
             return hardware_interface::return_type::ERROR;
         }

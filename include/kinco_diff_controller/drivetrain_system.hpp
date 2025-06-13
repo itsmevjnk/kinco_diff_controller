@@ -43,6 +43,8 @@ namespace kinco_diff_controller {
     private:
         std::string port_;
         uint8_t left_id_, right_id_;
+        double max_speed_;
+        bool reverse_, reverse_right_;
 
         std::shared_ptr<rclcpp::Logger> logger_;
         rclcpp::Clock::SharedPtr clock_;

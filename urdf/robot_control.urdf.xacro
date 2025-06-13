@@ -8,6 +8,9 @@
                     <param name="port">/dev/ttyUSB0</param>
                     <param name="left_id">1</param>
                     <param name="right_id">2</param>
+                    <param name="max_speed">3000</param>
+                    <param name="reverse">1</param>
+                    <param name="reverse_right">1</param>
                 </hardware>
             </xacro:unless>
             
