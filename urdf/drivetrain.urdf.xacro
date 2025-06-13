@@ -13,5 +13,8 @@
 
     <xacro:robot prefix="$(arg prefix)" />
 
-    <xacro:robot_control name="Kinco Differential Robot" prefix="$(arg prefix)" use_mock_hardware="$(arg use_mock_hardware)"/>
+    <xacro:robot_control
+        name="Kinco Differential Robot" prefix="$(arg prefix)"
+        port="/dev/ttyS0" left_id="1" right_id="2"
+        use_mock_hardware="$(arg use_mock_hardware)"/>
 </robot>

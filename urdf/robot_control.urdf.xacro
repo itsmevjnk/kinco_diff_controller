@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="robot_control" params="name prefix use_mock_hardware">
+    <xacro:macro name="robot_control" params="name prefix use_mock_hardware port left_id right_id">
         <ros2_control name="${name}" type="system">
             <xacro:unless value="${use_mock_hardware}">
                 <hardware>
                     <plugin>kinco_diff_controller/DrivetrainSystemHardware</plugin>
-                    <param name="port">/dev/ttyUSB0</param>
-                    <param name="left_id">1</param>
-                    <param name="right_id">2</param>
+                    <param name="port">${port}</param>
+                    <param name="left_id">${left_id}</param>
+                    <param name="right_id">${right_id}</param>
                     <param name="max_speed">3000</param>
                     <param name="reverse">1</param>
                     <param name="reverse_right">1</param>
