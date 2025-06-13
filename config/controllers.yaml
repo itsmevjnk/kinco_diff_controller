@@ -13,12 +13,12 @@ drivetrain_controller:
     left_wheel_names: ["left_wheel_joint"]
     right_wheel_names: ["right_wheel_joint"]
 
-    wheel_separation: 0.10 # TODO - in metres
-    wheel_radius: 0.015 # TODO
+    wheel_separation: 0.3045
+    wheel_radius: 0.08
 
     wheel_separation_multiplier: 1.0
-    left_wheel_radius_multiplier: 1.0
-    right_wheel_radius_multiplier: 1.0
+    left_wheel_radius_multiplier: 0.0476 # geared wheel
+    right_wheel_radius_multiplier: 0.0476
 
     publish_rate: 50.0
     odom_frame_id: odom
