@@ -41,7 +41,7 @@ install(
   DESTINATION include/kinco_diff_controller
 )
 install(
-  DIRECTORY launch config urdf rviz
+  DIRECTORY launch config urdf rviz meshes
   DESTINATION share/kinco_diff_controller
 )
 install(TARGETS kinco_diff_controller

@@ -5,9 +5,6 @@
 
     <xacro:include filename="$(find kinco_diff_controller)/urdf/robot_description.urdf.xacro" />
 
-    <!-- Import Rviz colors -->
-    <xacro:include filename="$(find kinco_diff_controller)/urdf/robot_materials.urdf.xacro" />
-
     <!-- Import ros2_control description -->
     <xacro:include filename="$(find kinco_diff_controller)/urdf/robot_control.urdf.xacro" />
 
