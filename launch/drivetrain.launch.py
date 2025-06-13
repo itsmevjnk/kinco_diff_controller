@@ -77,7 +77,7 @@ def generate_launch_description():
         output="both",
         remappings=[
             ("~/robot_description", "/robot_description"),
-            ("/drivetrain_controller/cmd_vel", "/cmd_vel"),
+            ("/drivetrain_controller/cmd_vel_unstamped", "/cmd_vel"),
         ],
     )
     robot_state_pub_node = Node(
