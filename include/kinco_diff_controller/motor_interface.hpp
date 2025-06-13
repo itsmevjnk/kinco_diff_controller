@@ -17,6 +17,7 @@ public:
 
 private:
     bool Write(uint8_t id, uint16_t cmd, uint16_t index, uint8_t subIndex, const uint8_t* data, size_t len);
+    ssize_t ReadPacket(uint8_t* buf);
     uint8_t CalculateChecksum(const uint8_t* data);
 
     int m_fd;

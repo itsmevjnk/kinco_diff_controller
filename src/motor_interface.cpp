@@ -21,10 +21,10 @@ MotorInterface::MotorInterface(const char* port) {
     cfsetospeed(&tty, B38400);
     cfsetispeed(&tty, B38400);
     tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; // 8-bit characters
-    tty.c_iflag &= ~IGNBRK; // disable break processing
+    tty.c_iflag &= ~(IGNBRK | ICANON); // disable break processing
     tty.c_lflag = 0; // no signalling chars, no echo, no canonical processing
     tty.c_oflag = 0; // no remapping, no delays
-    tty.c_cc[VMIN] = 0; // non-blocking read
+    tty.c_cc[VMIN] = 10;
     tty.c_cc[VTIME] = 5; // 500ms read timeout
     tty.c_iflag &= ~(IXON | IXOFF | IXANY); // turn off XON/XOFF
     tty.c_cflag |= (CLOCAL | CREAD); // ignore modem controls, enable reading
@@ -50,6 +50,17 @@ uint8_t MotorInterface::CalculateChecksum(const uint8_t* data) {
     return (uint8_t)-sum;
 }
 
+ssize_t MotorInterface::ReadPacket(uint8_t* buf) {
+    size_t offset = 0;
+    while (offset < 10) {
+        ssize_t ret = read(m_fd, &buf[offset], 10 - offset);
+        if (ret < 0) return ret;
+        if (ret == 0) break;
+        offset += ret;
+    }
+    return offset;
+}
+
 bool MotorInterface::Write(uint8_t id, uint16_t cmd, uint16_t index, uint8_t subIndex, const uint8_t* data, size_t len) {
     uint8_t buf[10];
     buf[0] = id;
@@ -65,10 +76,13 @@ bool MotorInterface::Write(uint8_t id, uint16_t cmd, uint16_t index, uint8_t sub
         throw std::runtime_error("write() failed");
     }
 
-    if (read(m_fd, buf, 10) != 10) {
+read:
+    if (ReadPacket(buf) != 10) {
         std::cerr << "Cannot read payload from serial port" << std::endl;
         throw std::runtime_error("read() failed");
     }
+
+    if (buf[1] == cmd) goto read;
 
     if (buf[1] != 0x60) {
         std::cerr << "Object write failed" << std::endl;
@@ -80,14 +94,14 @@ bool MotorInterface::Write(uint8_t id, uint16_t cmd, uint16_t index, uint8_t sub
 
 bool MotorInterface::Write32(uint8_t id, uint16_t index, uint8_t subIndex, uint32_t data) {
     uint8_t dataBuf[4] = {
-        (uint8_t)(data & 0xFF), (uint8_t)((data >> 8) & 0xFF), (uint8_t)((data >> 16) & 0xFF), (uint8_t)((data >> 24) & 0xFF)
+        data & 0xFF, (data >> 8) & 0xFF, (data >> 16) & 0xFF, (data >> 24) & 0xFF
     };
     return Write(id, 0x23, index, subIndex, dataBuf, 4);
 }
 
 bool MotorInterface::Write16(uint8_t id, uint16_t index, uint8_t subIndex, uint16_t data) {
     uint8_t dataBuf[2] = {
-        (uint8_t)(data & 0xFF), (uint8_t)((data >> 8) & 0xFF)
+        data & 0xFF, (data >> 8) & 0xFF
     };
     return Write(id, 0x2B, index, subIndex, dataBuf, 2);
 }
@@ -110,7 +124,8 @@ uint32_t MotorInterface::Read(uint8_t id, uint16_t index, uint8_t subIndex) {
         throw std::runtime_error("write() failed");
     }
 
-    if (read(m_fd, buf, 10) != 10) {
+read:
+    if (ReadPacket(buf) != 10) {
         std::cerr << "Cannot read payload from serial port" << std::endl;
         throw std::runtime_error("read() failed");
     }
@@ -125,6 +140,9 @@ uint32_t MotorInterface::Read(uint8_t id, uint16_t index, uint8_t subIndex) {
         case 0x4F:
             return buf[5];
             
+        case 0x40:
+            goto read; // try again
+
         default:
             std::cerr << "Object read failed" << std::endl;
             return 0;
