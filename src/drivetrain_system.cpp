@@ -157,6 +157,11 @@ namespace kinco_diff_controller {
             right_velocity_ = -right_velocity_;
         }
 
+        if (reverse_right_) {
+            right_position_ = -right_position_;
+            right_velocity_ = -right_velocity_;
+        }
+
         return hardware_interface::return_type::OK;
     }
 
