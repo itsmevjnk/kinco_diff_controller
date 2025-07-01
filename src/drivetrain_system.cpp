@@ -123,13 +123,13 @@ namespace kinco_diff_controller {
 
     hardware_interface::CallbackReturn DrivetrainSystemHardware::on_activate(const rclcpp_lifecycle::State& /* previous_state*/) {
         RCLCPP_INFO(get_logger(), "initialising left motor with ID %u", left_id_);
-        left_motor_ = new Motor(*interface_, left_id_);
+        left_motor_ = new Motor(*interface_, left_id_, true);
         left_position_ = left_motor_->GetPosition() * 2 * M_PI; // position in radians
         left_velocity_ = left_motor_->GetVelocity() * 2 * M_PI / 60; // velocity in radians per second
         left_command_ = 0.0;
 
         RCLCPP_INFO(get_logger(), "initialising right motor with ID %u", right_id_);
-        right_motor_ = new Motor(*interface_, right_id_);
+        right_motor_ = new Motor(*interface_, right_id_, true);
         right_position_ = right_motor_->GetPosition() * 2 * M_PI;
         right_velocity_ = right_motor_->GetVelocity() * 2 * M_PI / 60;
         right_command_ = 0.0;
